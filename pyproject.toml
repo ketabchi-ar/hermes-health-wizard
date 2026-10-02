@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-health-wizard"
+version = "0.1.0"
+description = "Local health report and guarded recovery panel for Hermes Agent WebUI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Hermes Health Wizard contributors"}]
+dependencies = []
+
+[project.scripts]
+hermes-health-wizard = "hermes_wizard.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hermes_wizard*"]
