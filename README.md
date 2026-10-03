@@ -1,12 +1,29 @@
+<p align="center"><img src="assets/logo.png" alt="Hermes Health Wizard logo" width="132"></p>
+
 # Hermes Health Wizard
 
-A small, local diagnostic panel for Hermes Agent and Hermes WebUI. It runs with Python 3.10+ and its standard library; no dependencies are downloaded to use `run.sh`.
+<p align="center">Local diagnostics and guarded recovery for Hermes Agent and Hermes WebUI.</p>
+
+<p align="center">
+  <a href="https://github.com/ketabchi-ar/hermes-health-wizard/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ketabchi-ar/hermes-health-wizard/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Python 3.10+" src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white">
+  <img alt="macOS and Linux" src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-1e293b">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-34d399">
+  <img alt="Local first" src="https://img.shields.io/badge/data-local%20first-38bdf8">
+</p>
+
+**English** · [فارسی](README.fa.md)
+
+![Illustration of a terminal connected to a local diagnostics panel](assets/hero.png)
+
+A small, local diagnostic panel for Hermes Agent and Hermes WebUI. It runs with Python 3.10+ and its standard library; no dependencies are downloaded to use `run.sh`. It is an independent community tool, not affiliated with NousResearch or the Hermes WebUI maintainers.
 
 ## Quick start
 
 On macOS or Linux, clone or download this repository, then run:
 
 ```bash
+git clone https://github.com/ketabchi-ar/hermes-health-wizard.git
 cd hermes-health-wizard
 ./run.sh
 ```
@@ -20,6 +37,17 @@ If your Hermes installation uses other paths or a different WebUI port:
 ```
 
 The environment variables `HERMES_HOME`, `HERMES_WEBUI_REPO`, `HERMES_WEBUI_PORT`, `HERMES_WEBUI_PID_FILE`, and `HERMES_WEBUI_LOG_FILE` are also supported. The last two follow overrides used by WebUI's `ctl.sh`.
+
+## Four-step recovery guide
+
+![Four steps: check, back up, restart, verify](assets/recovery-guide.png)
+
+1. **Check:** Inspect deep health, the session endpoint, SQLite health, and recent lock warnings.
+2. **Back up:** Create and verify a consistent SQLite copy before changing the running process.
+3. **Restart:** Restart only a WebUI process verified as owned by `ctl.sh`.
+4. **Verify:** Check deep health again, then refresh the report to confirm sessions respond.
+
+If the listener is outside `ctl.sh` control, the wizard gives manual steps instead of stopping an unknown process.
 
 ## Terminal commands
 
