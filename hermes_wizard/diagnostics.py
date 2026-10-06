@@ -305,6 +305,26 @@ def restart_webui(settings: Settings) -> dict:
             "A WebUI process is listening but ctl.sh does not own it. Stop that foreground "
             "process in its own terminal, then run ctl.sh start. No process was terminated."
         )
+    if pids:
+        state_file = settings.hermes_home / "webui.ctl.env"
+        if not state_file.is_file():
+            raise RuntimeError(
+                "ctl.sh state file is missing; refusing to restart a listener it cannot verify"
+            )
+        try:
+            identity = subprocess.run(
+                ["ps", "-ww", "-p", str(pid_file), "-o", "args="],
+                capture_output=True, text=True, timeout=3, check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise RuntimeError(
+                "Cannot inspect the WebUI process command; no restart was attempted"
+            ) from exc
+        if identity.returncode != 0 or str(settings.webui_repo) not in identity.stdout:
+            raise RuntimeError(
+                "Cannot verify that ctl.sh owns this WebUI process. Run recovery from a "
+                "normal terminal with process-inspection permission. No restart was attempted."
+            )
     backup = backup_database(settings)
     command = "restart" if pids else "start"
     env = os.environ.copy()

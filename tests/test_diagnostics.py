@@ -54,8 +54,11 @@ class DiagnosticsTests(unittest.TestCase):
     def test_managed_restart_backs_up_before_controller_runs(self):
         self.make_database()
         (self.repo / "ctl.sh").write_text("#!/bin/sh\nexit 0\n")
+        (self.home / "webui.ctl.env").write_text("PID=123\n")
         backup_seen = []
         def fake_run(command, **_kwargs):
+            if command[0] == "ps":
+                return subprocess.CompletedProcess(command, 0, f"python {self.repo}/bootstrap.py", "")
             backup_seen.extend((self.home / "backups" / "hermes-health-wizard").glob("*.db"))
             return subprocess.CompletedProcess(command, 0, "restarted", "")
         with patch("hermes_wizard.diagnostics.listener_pids", return_value=[123]), \
@@ -66,6 +69,21 @@ class DiagnosticsTests(unittest.TestCase):
         self.assertEqual(result["action"], "restart")
         self.assertEqual(len(backup_seen), 1)
         self.assertEqual(database_check(backup_seen[0])["status"], "ok")
+
+    def test_restart_refuses_when_process_inspection_is_unavailable(self):
+        self.make_database()
+        (self.repo / "ctl.sh").write_text("#!/bin/sh\nexit 0\n")
+        state = self.home / "webui.ctl.env"
+        state.write_text("PID=123\n")
+        with patch("hermes_wizard.diagnostics.listener_pids", return_value=[123]), \
+             patch("hermes_wizard.diagnostics.managed_pid", return_value=123), \
+             patch("hermes_wizard.diagnostics.subprocess.run", return_value=subprocess.CompletedProcess(
+                 ["ps"], 1, "", "operation not permitted")) as run:
+            with self.assertRaisesRegex(RuntimeError, "Cannot verify"):
+                restart_webui(self.settings)
+        self.assertEqual(run.call_count, 1)
+        self.assertEqual(state.read_text(), "PID=123\n")
+        self.assertFalse((self.home / "backups").exists())
 
     def test_recent_lock_and_writer_warnings_appear_in_report(self):
         self.make_database()
